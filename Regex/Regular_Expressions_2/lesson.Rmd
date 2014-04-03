@@ -1,5 +1,5 @@
 Lesson Name:  Regular Expressions 2
-Course Name:  Biostats 753
+Course Name:  Regular Expressions
 Type:         Standard
 Author:       Your name goes here
 Organization: The name of your organization goes here (optional)
