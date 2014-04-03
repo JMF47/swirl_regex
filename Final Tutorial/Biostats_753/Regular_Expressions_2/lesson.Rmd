@@ -1,0 +1,154 @@
+Lesson Name:  Regular Expressions 2
+Course Name:  Biostats 753
+Type:         Standard
+Author:       Your name goes here
+Organization: The name of your organization goes here (optional)
+Version:      2.1.1
+================================================================
+
+--- &text
+This is the second lesson on regular expressions, and assumes that the user is familiar with the use of literals, `()`, `{}`, `*`, `^`, `$`, `^`, and `{n,m}` at a basic level. We will proceed and introduce the concepts of escape characters and non-greedy matches, followed by examples of how to use regex with supplied data for data cleaning and/or extraction.
+
+--- &cmd_question
+Now, before we begin in earnest, please recall how to install and/or load the package "stringr", which we will use in this lesson for implementing regular expression matching.
+```{r}
+if (("stringr" %in% installed.packages()) == F){install.packages("stringr"); library("stringr")}else{library("stringr")}
+```
+*** .hint
+Try using the commands `install.packages()` and `library()`
+*** .ans_tests
+("stringr" %in% (.packages()) == T)
+
+--- &cmd_question
+The first concept that we will go over is the use of escape characters. Note that certain characters like `?` or `*` have been ear-marked for use as metacharacters, so what happens when one wants to match those characters literally? The answer is through the use of escape characters. In the stringr package, using double backslash `\\` will allow literal matching of the preceding symbol. For instance, the expression "1\\+1" will match "1+1". Now it is your turn, try and create an expression that will match "1+1=2!".
+```{r}
+"1\\+1=2\\!"
+```
+*** .hint
+Beware that "=" does not require an escape sequence.
+*** .ans_tests
+regexTest(e$val, "1\\+1=2\\!", list("1+1=2", "11+1=2/", "1+1=2!", "1+1=2!asdf"))
+
+--- &cmd_question
+The second concept that we will go over is the concept of greedy versus non-greedy matching. In particular, this concept pertains to matches conducted with `*`, `+`, `{}`, where the number of characters matched is flexible. Left to default, if the expression is "A*", and the target is "AAA", the resulting match is "AAA". Even more importantly, when the expression is "A.*C", and the target is "ABCABBC", the resulting match is "ABCABBC" (the expression maximizes the number of characters that .* can be). In order to match the first "ABC", we use the `?` metacharacter right after `*` to negate the greedy match. In that case, the expression would be "A.*?C". Now it is your turn, enter the expression that would match a string that starts with "Somewhere", ending with "rainbow", with the minimum number of any character between the two parts.
+```{r}
+"Somewhere.*?rainbow"
+```
+*** .hint
+See example in question
+*** .ans_tests
+regexTest(e$val, "Somewhere.*?rainbow", list("Somewhere Somewhere rainbow rainbow", "Somewhere over the rainbow", "rainbow Somewhere over Somewhere rainbow"))
+
+--- &cmd_question
+To reinforce the concept of greedy versus non-greedy, please enter an expression that would match a string starting with "wonderful", ending with "OZ", separated by the minimum number (at least 1) of any character. For instance, "wonderfulOZ" would not be matched, but "wonderful OZ" would be.
+```{r}
+"wonderful.+?OZ"
+```
+*** .hint
+Use `+`
+*** .ans_tests
+regexTest(e$val, "wonderful.+?OZ", list("wonderfulOZ", "wonderfulOZ", "wonderful wonderful OZ"))
+
+--- &cmd_question
+Now we will look at 2 simple applications where regex can prove to be indispensable, followed by a more in depth use of regex for data collection. The first example is using regex to find strings that match the form of an e-mail address. Please enter that expression now, and note the general form of an e-mail address (at least one character, followed by `@`, then followed by at least one character, and concluding with `.` followed by at least one character between)
+```{r}
+".+@.+\\..+"
+```
+*** .hint
+Use `+`
+*** .ans_tests
+regexTest(e$val, ".+@.+\\..+", list("asdf@asdf.sfd", "asdf@asdf", "@asdf.sdf", "@.asdf"))
+
+--- &cmd_question
+The second example that we will look at is matching ip addresses. Ip addresses generally take the form of four repititions of numbers between 0 and 255 seperated by three periods i.e. 0.0.0.0 and 196.2.3.44. Now find an expression that will math ip addresses in a target. Beware this is a fair bit more complex and requires some creativity.
+```{r}
+"(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+```
+*** .hint
+Break the match down into four matches of numbers between 0 and 255, with a mandatory `.` between any two numbers. For each number match, break down the matching into cases of 250-255, 200-249, and 0-199 using `()`, `[]`, and `?`. Explicit hint: a subunit can be written as: (25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
+*** .ans_tests
+regexTest(e$val, "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)", list("256.233.2.2", "123.2.3.44", "23.234.1.2", "2.3.4", "2.3.4.5.6", "0.2343.23.4"))
+
+--- &cmd_question
+Now we will move on to a more complicated instance of data cleaning and gathering using regular expressions. As part of the lesson, a string file called "doc" has been loaded into R for your use. Doc is a string format of the behind the scenes html code of a Google Scholars citations page, and contains information on a specific academic paper published by a specific faculty member. Within this text is stored the following information: Paper name, authors, journal, and citation numbers. We will develop regular expressions that will allow one to systematically extract all such information from a generic citations page from Google Scholar. But first, let's enter the command to print "doc" and take a quick look through the data.
+```{r}
+print(doc)
+```
+*** .hint
+print(doc)
+***. ans_tests
+expr_identical_to(print(doc))
+
+--- &cmd_question
+We will first locate the paper name using regular expression. To achieve this goal, it is necessary to know that the title of the paper is sandwiched between "<div id="title">" and "</a>". First, locate this chunk of text using the str_extract command for "doc", and assign it the name Z. Make sure to use non-greedy match and the correct escape sequence for `"`. The output based on this particular citation page should look like "<div id=\"title\"><a style=\"text-decoration:none\" href=\"http://dx.plos.org/10.1371/journal.pmed.1000132.g002\">Sleep-disordered breathing and mortality: a prospective cohort study</a>"
+```{r}
+Z="<div id=\"title\"><a style=\"text-decoration:none\" href=\"http://dx.plos.org/10.1371/journal.pmed.1000132.g002\">Sleep-disordered breathing and mortality: a prospective cohort study</a>"
+```
+*** .hint
+The escape sequence for `"` is `\"` and str_extract takes 2 parameters - str_extract(Target, Expression).
+*** .ans_tests
+Z=="<div id=\"title\"><a style=\"text-decoration:none\" href=\"http://dx.plos.org/10.1371/journal.pmed.1000132.g002\">Sleep-disordered breathing and mortality: a prospective cohort study</a>"
+
+--- &cmd_question
+Now that we have the title in a rough form, we can focus in on the title by using regular expressions and the str_split command. Note the repeated existence of the "< something >" structure in Z. Now call Y=str_split(Z, Expression), where the second parameter is an expression that matches targets starting with "<" and ending with ">", with a minimal number of any character in between.
+```{r}
+Y=str_split(Z, "<.*?>")
+```
+*** .hint
+The function call should look like str_split(Z, "<X>"). The key is figuring out what "X" should be.
+*** .ans_tests
+Y[[1]][3] == "Sleep-disordered breathing and mortality: a prospective cohort study"
+
+--- &cmd_question
+Now print Y, and one can observe that the second last segment contains the title, and the method used to obtain it is fully generic, and so can be applied to any google citations page. Congratulations!
+```{r}
+print(Y)
+```
+*** .hint
+print(Y)
+***. ans_tests
+expr_identical_to(print(Y))
+
+--- &cmd_question
+Next, we will extract the author list from "doc". Note that this time, one can exploit the property that the author list is sandwiched between "Authors</div>" and "</div>". Using the str_extract function and the appropriate expression, save to the variable Z the chunk of "doc" that contains this information. For "doc", Z should look like "Authors</div>\n<div class=\"cit-dd\"> Naresh M Punjabi,  Brian S Caffo,  James L Goodwin,  Daniel J Gottlieb,  Anne B Newman,  George T O'Connor,  David M Rapoport,  Susan Redline,  Helaine E Resnick,  John A Robbins,  Eyal Shahar,  Mark L Unruh,  Jonathan M Samet</div>".
+```{r}
+Z = "Authors</div>\n<div class=\"cit-dd\"> Naresh M Punjabi,  Brian S Caffo,  James L Goodwin,  Daniel J Gottlieb,  Anne B Newman,  George T O'Connor,  David M Rapoport,  Susan Redline,  Helaine E Resnick,  John A Robbins,  Eyal Shahar,  Mark L Unruh,  Jonathan M Samet</div>"
+```
+*** .hint
+Z=str_extract(doc, Expression). Find the appropriate expression.
+*** .ans_tests
+Z=="Authors</div>\n<div class=\"cit-dd\"> Naresh M Punjabi,  Brian S Caffo,  James L Goodwin,  Daniel J Gottlieb,  Anne B Newman,  George T O'Connor,  David M Rapoport,  Susan Redline,  Helaine E Resnick,  John A Robbins,  Eyal Shahar,  Mark L Unruh,  Jonathan M Samet</div>"
+
+--- &cmd_question
+Now that we have the author list in a rough form, we can again focus in on the title by using regular expressions and the str_split command. Using the same approach as used when refining the paper name, call Y=str_split(Z, Expression), splitting by the expression "<.*?>"
+```{r}
+Y=str_split(Z, "<.*?>")
+```
+*** .hint
+Enter str_split(Z, "<.*?>)
+*** .ans_tests
+Y[[1]][3]=" Naresh M Punjabi,  Brian S Caffo,  James L Goodwin,  Daniel J Gottlieb,  Anne B Newman,  George T O'Connor,  David M Rapoport,  Susan Redline,  Helaine E Resnick,  John A Robbins,  Eyal Shahar,  Mark L Unruh,  Jonathan M Samet"
+
+--- &cmd_question
+Again, now use the print command on Y, and one can observe that the second last segment contains the authors list, and the method used to obtain it is fully generic, and so can be applied to any google citations page. Congratulations!
+```{r}
+print(Y)
+```
+*** .hint
+print(Y)
+***. ans_tests
+expr_identical_to(print(Y))
+
+--- &cmd_question
+Now that we have seen two repetition of this narrowing-in approach on finding relevant information, the logic should become familiar. To conclude this lesson, we will execute one last example - finding the number of citations of a paper from its parsed html file. The expression required will match a string starting with "Cited by " followed by as many numbers in a row as possible. Apply this to "doc" using the str_extract command and save the result to Z. Z should equal "Cited by 390".
+```{r}
+Z=str_extract(doc, "Cited by [0-9]*")
+```
+*** .hint
+Enter Z=str_extract(doc, Expression)
+*** .ans_tests
+Z=="Cited by 390"
+
+--- &text
+Congratulations on completing the more advanced module for regular expressions. Now that you know basic regex and have seen some examples of using regular expressions to clean and extract data, you can hopefully see the wonderful uses of regex. For your pleasure and snobbery, please check out https://xkcd.com/208/. Welcome to the club!
+

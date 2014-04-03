@@ -1,0 +1,136 @@
+Lesson Name:  Regular Expressions
+Course Name:  Biostats 753
+Type:         Standard
+Author:       Your name goes here
+Organization: The name of your organization goes here (optional)
+Version:      2.1.1
+================================================================
+
+--- &text
+Welcome to an introductory lesson to regular expressions in R. Regular expressions are a powerful method of processing text, often employed in the field of genomics or data cleaning. By completing this lesson, one should acquire the basic know-how to manipulate text files in R.
+
+--- &text
+First, we will define a term - Expression. An expression can be thought of as a rule for searching for a match. Secondly, a Target String is defined a string within which a desired match will be looked for. To begin with, we will look at the simplest expressions, those containing only Literals. A literal is a character or a string template against which an exact match will be searched for.
+
+--- &cmd_question
+Throughout this lesson, we will be using a package called stringr, which has many useful expressions that utilize regular expressions to process text. We will begin by installing and/or loading the package stringr into R. Please input the commands to do so now.
+```{r}
+if (("stringr" %in% installed.packages()) == F){install.packages("stringr"); library("stringr")}else{library("stringr")}
+```
+*** .hint
+Try using the commands `install.packages()` and `library()`
+*** .ans_tests
+("stringr" %in% (.packages()) == T)
+
+--- &cmd_question
+Now that we have installed and loaded the package stringr, we will utilize the function `str_extract()` for some basic searches. First, we present an example where the Expression is a Literal called "app", and the Target String is "apple". By calling the function `str_extract("apple", "app")`, one can recover the match for "app" if there is a match in the target string "apple". `X=str_extract("apple", "app")` will store the answer "app" in a variable named X. Now it is your turn to try looking for the literal "win" in "windows".
+```{r}
+str_extract("windows", "win")
+```
+*** .hint
+Follow the same template as presented in the question, `str_extract(Target String, Literal)`
+*** .ans_tests
+e$val == "win"
+
+--- &cmd_question
+Now we will introduce the concept of metacharacters. Metacharacters are a collection of special characters that have unique meanings and will not be used as literals (i.e. it will not be matched literally) in an expression. We will first introduce the metacharacter `[]`. `[]` will match anything inside the square brackets for one character once, and only once. For example, `[ab]` will find "a" in "hat", "b" in "obsolete", and "b" in "bat". Note that the order inside of the `[]` matters, matches are conducted from left to right - hence "b" is found in "bat". Now it is your turn to try out this metacharacter. Enter the expression that will match either "A" or "a" (put double quotations around your answer to signal to R that it is a string).
+```{r}
+"[Aa]"
+```
+*** .hint
+Z = "[Something]"
+*** .ans_tests
+regexTest(e$val, "[Aa]", list("A", "a", "Ba", "BA"))
+
+--- &cmd_question
+The power of regular expressions lies in the metacharacters. We will now examine a second metacharacter "-". This indicates a range, and when combined with `[]`, becomes even more useful. For example `[0-9]` will match any one number between 0 and 9. They can be extended, `[0-9A-Z]` will match any one character that is between 0 and 9 and between A and Z. Now it is your turn, find the expression that will look for a number between 0 and 9, and store that expression as a variable called Z
+```{r}
+"[0-9]"
+```
+*** .hint
+Use the `-` and `[]`
+*** .ans_tests
+regexTest(e$val, "[0-9]", list("asdf0", "9283dfsdf", "23asdf"))
+
+--- &cmd_question
+The third metacharacter that we will explore today is `^`, and is a symbol for negation when used inside of `[]`. For example, `[^H]` will return "I" from "HI". Now it is your turn, this time you have to be a little bit more creative, find an expression to look for any one characterthat is not between "A" and "Z" and store that expression as Z. (Hint: combine metacharacters `[]`, `-`, and `^` in a precise order)
+```{r}
+"[^A-Z]"
+```
+*** .hint
+Brackets should encompass everything, and the negation comes in front of what one wants to negate.
+*** .ans_tests
+regexTest(e$val, "[^A-Z]", list("0", "A0"))
+
+--- &cmd_question
+Now we will take our first spin at combining literals and metacharacters! For example, "[Bb]ush" will match "Bush" and "bush". Now it is your turn to write an expression that will match either "leet" or "l33t" in and store the results in Z.
+```{r}
+"l[e3][e3]t"
+```
+*** .hint
+You can use any number of bracket metacharacters in a row "[Hh][Hh]"
+*** .ans_tests
+regexTest(e$val, "l[e3][e3]t", list("leet", "l33t", "0leet", "0l33t", "leet0", "l33t0", "let", "l3t"))
+
+--- &cmd_question
+Now we will introduce a new concept - positioning and anchors. Again here, `^` appears as a metacharacter. However, in this context, the `^` is used outside of the square brackets `[]` and denote a string beginning with what follows. For example "^George" will match "George", but will not match "Hi George". Now it is your turn to match strings that start with "George" or "george", and store the expression in the variable Z.
+```{r}
+"^[Gg]eorge"
+```
+*** .hint
+Use `^` and `[]`
+*** .ans_tests
+regexTest(e$val, "^[Gg]eorge", list("George", "george", "0George", "0george", "George0", "george0"))
+
+--- &cmd_question
+To complement `^` at the start, `$` serves the same function for the end of a string. For example, "Bush$" will find strings that end in "Bush". Now it is your turn, store the expression as Z that would find strings ending with "Bush" or "bush".
+```{r}
+"[Bb]ush$"
+```
+*** .hint
+Same format as previous question, just replace ^ with $ at the right place
+*** .ans_tests
+regexTest(e$val, "[Bb]ush$", list("Bush", "bush", "0Bush", "0bush", "Bush0", "bush0"))
+
+--- &cmd_question
+The last positioning concept we will look at is `.`. `.` represents any character at the position. For example "hat." will find "hats", "hatter", "hate", but not "hat" since "hat" has no character following. Now it is your turn to combine all the information so far in position, and store the expression as Z that will match a string that starts with "George" or "george", followed by anything for one character, and ends with "Bush" or "bush".
+```{r}
+"^[Gg]eorge.[Bb]ush$"
+```
+*** .hint
+"^George.Bush$" finds words that start with "George", ends with "Bush", and is separated by any one character.
+*** .ans_tests
+regexTest(e$val, "^[Gg]eorge.[Bb]ush$", list("George Bush", "george bush", "George bush", "george Bush", "0George Bush", "George9Bush", "9George Bush", "George Bush8"))
+
+--- &text
+Now we will examine metacharacters that deal with repetition. "?" matches what comes before if it happens 0 or 1 times. "Colou?r" will find both "Color" and "Colour". "*" will match what comes before it any number of times; "+" matches what comes before 1 or more times; "{n}" will match what comes before it if it occurs exactly n times. For example "[0-9]{3}-[0-9]{3}-[0-9]{4}" will find phone numbers of the North American format (note here that "-" is used as a literal outside of "[]"). "{n, m}" will match what comes before it at least n times but at most m times. "{n,}" will match what comes before at least n times.
+
+--- &cmd_question
+Now, it is your turn, construct an expression that will match any part of a string that starts with "A" and end with "E", sandwiched between 3 and 5 (inclusive) occurences of any letter ranging from A to Z (i.e it will find words like "AZURE").
+```{r}
+"A[A-Z]{3,5}Z"
+```
+*** .hint
+Use the anchors and `{}`
+*** .ans_tests
+regexTest(e$val, "^A[A-Z]{3,5}Z", list("AZURE", "ADLKJE", "ADDDDDZ", "AZZE", "AE", "SDSDAEEEE", "DSDAlkdfE"))
+
+--- &cmd_question
+The second last metacharacter that we will examine is `()` and is used to group different parts of search expressions. For example "^(HEY)" will find anything that starts with "HEY". "(Hey){3,4}" will match "HeyHeyHey" or "HeyHeyHeyHey". "^(George) [Ww] (Bush)$" will match "George W Bush" or "George w Bush". Now construct and save to the variable Z the expression that will find a string that starts with "Somewhere" and ends with "Rainbow", with any number of characters in between.
+```{r}
+"(Somewhere).*(Rainbow)"
+```
+*** .hint
+Use the combination .* in the middle
+*** .ans_tests
+regexTest(e$val, "(Somewhere).*(Rainbow)", list("Somewhere over the Rainbow way up high", "SomewhereRainbow", "Somewhere Rainbow", "somewhererainbow"))
+
+--- &cmd_question
+The last mtacharacter we will look at is the pipe `|`, which is the syntax for or. For example "gr(a|e)y" will match "grey" or "gray". Now it is your turn, come up with the expression that will match a string that starts with "Lord", "Load", or "Lodd" using only "()" and "|" and save that expression to Z.
+```{r}
+"^(Lo((r|a)|d)d)"
+```
+*** .hint
+Nesting "()"
+*** .ans_tests
+regexTest(e$val, "^(Lo((r|a)|d)d)", list("Lord", "Load", "Lodd", "0Lord", "Lord0"))
