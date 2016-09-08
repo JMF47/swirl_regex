@@ -10,7 +10,7 @@ Version:      2.1.1
 Welcome to an introductory lesson to regular expressions in R. Regular expressions are a powerful method of processing text, often employed in the field of genomics or data cleaning. By completing this lesson, one should acquire the basic know-how to manipulate text files in R.
 
 --- &text
-First, we will define a term - Expression. An expression can be thought of as a rule for searching for a match. Secondly, a Target String is defined a string within which a desired match will be looked for. To begin with, we will look at the simplest expressions, those containing only Literals. A literal is a character or a string template against which an exact match will be searched for.
+First, we will define a term - Expression. An expression can be thought of as a rule for searching for a match. Secondly, a Target String is defined as a string within which a desired match will be looked for. To begin with, we will look at the simplest expressions, those containing only Literals. A literal is a character or a string template against which an exact match will be searched for.
 
 --- &cmd_question
 Throughout this lesson, we will be using a package called stringr, which has many useful expressions that utilize regular expressions to process text. We will begin by installing and/or loading the package stringr into R. Please input the commands to do so now.
@@ -108,25 +108,25 @@ Now we will examine metacharacters that deal with repetition. "?" matches what c
 --- &cmd_question
 Now, it is your turn, construct an expression that will match any part of a string that starts with "A" and end with "E", sandwiched between 3 and 5 (inclusive) occurences of any letter ranging from A to Z (i.e it will find words like "AZURE").
 ```{r}
-"A[A-Z]{3,5}Z"
+"^A[A-Z]{3,5}E$"
 ```
 *** .hint
 Use the anchors and `{}`
 *** .ans_tests
-regexTest(e$val, "^A[A-Z]{3,5}Z", list("AZURE", "ADLKJE", "ADDDDDZ", "AZZE", "AE", "SDSDAEEEE", "DSDAlkdfE"))
+regexTest(e$val, "^A[A-Z]{3,5}E$", list("AZURE", "ADLKJE", "ADDDDDZ", "AZZE", "AE", "SDSDAEEEE", "DSDAlkdfE"))
 
 --- &cmd_question
 The second last metacharacter that we will examine is `()` and is used to group different parts of search expressions. For example "^(HEY)" will find anything that starts with "HEY". "(Hey){3,4}" will match "HeyHeyHey" or "HeyHeyHeyHey". "^(George) [Ww] (Bush)$" will match "George W Bush" or "George w Bush". Now construct and save to the variable Z the expression that will find a string that starts with "Somewhere" and ends with "Rainbow", with any number of characters in between.
 ```{r}
-"(Somewhere).*(Rainbow)"
+"^(Somewhere).*(Rainbow)$"
 ```
 *** .hint
 Use the combination .* in the middle
 *** .ans_tests
-regexTest(e$val, "(Somewhere).*(Rainbow)", list("Somewhere over the Rainbow way up high", "SomewhereRainbow", "Somewhere Rainbow", "somewhererainbow"))
+regexTest(e$val, "^(Somewhere).*(Rainbow)$", list("Somewhere over the Rainbow way up high", "SomewhereRainbow", "Somewhere Rainbow", "somewhererainbow"))
 
 --- &cmd_question
-The last mtacharacter we will look at is the pipe `|`, which is the syntax for or. For example "gr(a|e)y" will match "grey" or "gray". Now it is your turn, come up with the expression that will match a string that starts with "Lord", "Load", or "Lodd" using only "()" and "|" and save that expression to Z.
+The last metacharacter we will look at is the pipe `|`, which is the syntax for or. For example "gr(a|e)y" will match "grey" or "gray". Now it is your turn, come up with the expression that will match a string that starts with "Lord", "Load", or "Lodd" using only "()" and "|" and save that expression to Z.
 ```{r}
 "^(Lo((r|a)|d)d)"
 ```
